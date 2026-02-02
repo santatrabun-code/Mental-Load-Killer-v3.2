@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mental Load Keeper</title>
+
+<!-- PWA Configuration -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#8B7355">
+<meta name="description" content="Energy-aware task companion">
+
+<!-- Favicon - Multiple formats for better compatibility -->
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="96x96" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="shortcut icon" href="favicon.ico">
+
+<!-- Apple iOS -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ML Keeper">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144.png">
+
+<!-- Android Chrome -->
+<link rel="icon" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" sizes="512x512" href="icons/icon-512.png">
+
+<style>
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+}
+
+:root {
+  /* Warm, gentle color palette */
+  --cream: #F5EFE6;
+  --sand: #E7D7C1;
+  --warm-brown: #8B7355;
+  --deep-brown: #6B5D51;
+  --text: #4A3F36;
+  
+  /* Compassionate state colors - NO RED */
+  --rest: #B8C5D6;
+  --gentle: #C9E4CA;
+  --normal: #FFE5B4;
+  --strong: #E8C4A0;
+  
+  /* Accent colors */
+  --accent-purple: #9B8AA4;
+  --accent-coral: #D4A5A5;
+  
+  /* Energy phase colors (subtle) */
+  --phase-menstrual: #D4C4D8;
+  --phase-follicular: #E8DCC4;
+  --phase-ovulatory: #F4E4C1;
+  --phase-luteal: #D8C8B8;
+}
+
+body { 
+  font-family: 'Georgia', 'Palatino', serif;
+  background: var(--sand);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-container {
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+/* Typography */
+h1, h2, h3 {
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* Page System */
+.page {
+  display: none;
+  padding: 20px;
+  max-width: 640px;
+  margin: 0 auto;
+  opacity: 0;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.page.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+.page-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Energy Badge */
+.energy-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-style: italic;
+  background: var(--cream);
+  margin-bottom: 12px;
+}
+
+.cycle-phase {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+/* Day Result Label */
+.day-result {
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  border: 2px solid;
+  font-weight: 500;
+}
+
+.day-result.rest {
+  background: var(--rest);
+  border-color: var(--deep-brown);
+  color: var(--deep-brown);
+}
+
+.day-result.gentle {
+  background: var(--gentle);
+  border-color: var(--warm-brown);
+  color: var(--warm-brown);
+}
+
+.day-result.normal {
+  background: var(--normal);
+  border-color: var(--deep-brown);
+  color: var(--deep-brown);
+}
+
+.day-result.strong {
+  background: var(--strong);
+  border-color: var(--warm-brown);
+  color: var(--warm-brown);
+}
+
+/* Cards */
+.card {
+  background: var(--cream);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.card h3 {
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+
+/* Energy Selection */
+.energy-selector {
+  text-align: center;
+}
+
+.energy-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.energy-btn {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid var(--warm-brown);
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  color: var(--text);
+}
+
+.energy-btn:hover {
+  background: var(--warm-brown);
+  color: white;
+}
+
+.energy-btn.active {
+  background: var(--warm-brown);
+  color: white;
+}
+
+.rest-toggle {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.rest-toggle label {
+  cursor: pointer;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.rest-toggle input {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+/* Task Sections */
+.task-section {
+  margin-bottom: 12px;
+}
+
+.task-section > summary {
+  cursor: pointer;
+  padding: 12px;
+  background: var(--sand);
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.task-section > summary:hover {
+  background: #d9c9b3;
+}
+
+.task-count {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* Sub Cards */
+.sub-card {
+  margin: 12px 0 12px 16px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.sub-card > summary {
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  user-select: none;
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--warm-brown);
+  transition: width 0.3s ease;
+  border-radius: 3px;
+}
+
+/* Task List */
+.task-list {
+  list-style: none;
+  margin: 12px 0;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  margin: 4px 0;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.task-item:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+.task-item input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.task-text {
+  flex: 1;
+  cursor: pointer;
+  word-break: break-word;
+}
+
+.task-text.completed {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.task-deadline {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.task-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.4;
+  font-size: 1.2rem;
+  padding: 4px;
+  transition: opacity 0.2s;
+}
+
+.task-delete:hover {
+  opacity: 1;
+  color: #c66;
+}
+
+.add-task-btn {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px dashed var(--warm-brown);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--warm-brown);
+  font-family: inherit;
+  margin-top: 8px;
+  transition: all 0.2s;
+}
+
+.add-task-btn:hover {
+  background: rgba(139, 115, 85, 0.1);
+  border-style: solid;
+}
+
+/* Brain Vomit */
+.brain-input {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 2px solid var(--warm-brown);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+  background: white;
+}
+
+.brain-list {
+  list-style: none;
+  margin-top: 16px;
+}
+
+.brain-item {
+  background: var(--cream);
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border-left: 3px solid var(--warm-brown);
+}
+
+.brain-item-text {
+  margin-bottom: 8px;
+}
+
+.brain-item-meta {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.brain-item-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border: 1px solid var(--warm-brown);
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.btn-sm:hover {
+  background: var(--warm-brown);
+  color: white;
+}
+
+/* Calendar Heatmap */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.calendar-day:hover {
+  border-color: var(--warm-brown);
+  transform: scale(1.05);
+}
+
+.calendar-day.rest { background: var(--rest); }
+.calendar-day.gentle { background: var(--gentle); }
+.calendar-day.normal { background: var(--normal); }
+.calendar-day.strong { background: var(--strong); }
+.calendar-day.future { 
+  background: rgba(0,0,0,0.05);
+  opacity: 0.4;
+}
+
+.day-number {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.day-emoji {
+  font-size: 1rem;
+}
+
+/* Metrics Cards */
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.metric-row:last-child {
+  border-bottom: none;
+}
+
+.metric-label {
+  font-weight: 500;
+}
+
+.metric-value {
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* Closure Ritual */
+.closure-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 8px;
+  font-family: inherit;
+  margin-bottom: 12px;
+  background: white;
+}
+
+textarea.closure-input {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Period Tracker */
+.period-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.period-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--warm-brown);
+  border-radius: 6px;
+  font-family: inherit;
+}
+
+.cycle-info {
+  padding: 12px;
+  background: rgba(0,0,0,0.03);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-top: 12px;
+}
+
+.cycle-history {
+  list-style: none;
+  margin-top: 12px;
+}
+
+.cycle-history-item {
+  padding: 8px;
+  border-left: 3px solid var(--warm-brown);
+  margin: 6px 0;
+  background: rgba(255,255,255,0.5);
+  border-radius: 4px;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--cream);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  font-family: inherit;
+  transition: all 0.2s;
+  font-size: 0.75rem;
+}
+
+.nav-item:hover {
+  background: rgba(0,0,0,0.05);
+  border-radius: 8px;
+}
+
+.nav-item.active {
+  color: var(--warm-brown);
+  font-weight: 500;
+}
+
+.nav-icon {
+  font-size: 1.5rem;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--cream);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.modal-title {
+  font-size: 1.3rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  opacity: 0.6;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.close-btn:hover {
+  opacity: 1;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--warm-brown);
+  border-radius: 6px;
+  font-family: inherit;
+  margin-bottom: 12px;
+  background: white;
+  font-size: 1rem;
+}
+
+.modal-select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--warm-brown);
+  border-radius: 6px;
+  font-family: inherit;
+  margin-bottom: 12px;
+  background: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.modal-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--warm-brown);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1.05rem;
+  transition: all 0.2s;
+}
+
+.modal-btn:hover {
+  background: var(--deep-brown);
+}
+
+.modal-btn:active {
+  transform: scale(0.98);
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  opacity: 0.6;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .page {
+    padding: 16px;
+  }
+  
+  h1 {
+    font-size: 1.6rem;
+  }
+  
+  .calendar-grid {
+    gap: 6px;
+  }
+  
+  .energy-buttons {
+    flex-direction: column;
+  }
+}
+
+/* Gentle animations */
+@keyframes gentlePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.loading {
+  animation: gentlePulse 2s infinite;
+}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  
+  <!-- TODAY PAGE -->
+  <div id="today-page" class="page active">
+    <div class="page-header">
+      <h1>Today</h1>
+      <p class="subtitle" id="today-date"></p>
+      <div class="energy-badge" id="energy-badge"></div>
+      <div class="cycle-phase" id="cycle-phase"></div>
+    </div>
+
+    <div id="day-result" class="day-result gentle">🌱 Showing up is enough</div>
+
+    <!-- Energy Selection -->
+    <div class="card energy-selector">
+      <h3>How's your energy today?</h3>
+      <div class="energy-buttons">
+        <button class="energy-btn" data-energy="low">Low</button>
+        <button class="energy-btn active" data-energy="medium">Medium</button>
+        <button class="energy-btn" data-energy="high">High</button>
+      </div>
+      <div class="rest-toggle">
+        <input type="checkbox" id="rest-checkbox">
+        <label for="rest-checkbox">Mark as rest / safe day</label>
+      </div>
+    </div>
+
+    <!-- Tasks Container -->
+    <div id="tasks-container" class="card">
+      <!-- Tasks will be dynamically rendered here -->
+    </div>
+
+  </div>
+
+  <!-- BRAIN VOMIT PAGE -->
+  <div id="brain-page" class="page">
+    <div class="page-header">
+      <h1>Brain Vomit</h1>
+      <p class="subtitle">External processing space</p>
+    </div>
+
+    <div class="card">
+      <textarea 
+        id="brain-input" 
+        class="brain-input" 
+        placeholder="What's on your mind? Just let it out..."></textarea>
+      <button class="modal-btn" onclick="saveBrainVomit()" style="margin-top: 12px;">
+        Save Thought
+      </button>
+    </div>
+
+    <ul id="brain-list" class="brain-list"></ul>
+
+    <div class="empty-state" id="brain-empty">
+      <div class="empty-state-icon">💭</div>
+      <p>Your thoughts are safe here</p>
+    </div>
+  </div>
+
+  <!-- CALENDAR PAGE -->
+  <div id="calendar-page" class="page">
+    <div class="page-header">
+      <h1>Calendar</h1>
+      <p class="subtitle" id="calendar-month"></p>
+    </div>
+
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+        <button class="btn-sm" onclick="changeMonth(-1)">← Previous</button>
+        <button class="btn-sm" onclick="changeMonth(1)">Next →</button>
+      </div>
+      <div id="calendar-grid" class="calendar-grid"></div>
+    </div>
+
+    <!-- Legend -->
+    <div class="card">
+      <h3>Day Types</h3>
+      <div class="metric-row">
+        <span>🌙 Rest Day</span>
+        <span style="width: 30px; height: 30px; background: var(--rest); border-radius: 4px; display: inline-block;"></span>
+      </div>
+      <div class="metric-row">
+        <span>🌱 Gentle Day</span>
+        <span style="width: 30px; height: 30px; background: var(--gentle); border-radius: 4px; display: inline-block;"></span>
+      </div>
+      <div class="metric-row">
+        <span>🌿 Normal Day</span>
+        <span style="width: 30px; height: 30px; background: var(--normal); border-radius: 4px; display: inline-block;"></span>
+      </div>
+      <div class="metric-row">
+        <span>🌳 Strong Day</span>
+        <span style="width: 30px; height: 30px; background: var(--strong); border-radius: 4px; display: inline-block;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS PAGE -->
+  <div id="insights-page" class="page">
+    <div class="page-header">
+      <h1>Insights</h1>
+      <p class="subtitle">Your patterns, gently observed</p>
+    </div>
+
+    <div class="card">
+      <h3>This Week</h3>
+      <div id="week-metrics"></div>
+    </div>
+
+    <div class="card">
+      <h3>This Month</h3>
+      <div id="month-metrics"></div>
+    </div>
+
+    <div class="card">
+      <h3>Cycle Tracking</h3>
+      <p style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 12px; font-style: italic;">
+        Optional energy context layer - not rules, just awareness
+      </p>
+      <div class="period-input-group">
+        <input type="date" id="period-start-input" class="period-input" />
+        <button class="btn-sm" onclick="addPeriodStart()">Add Start Date</button>
+      </div>
+      <div id="cycle-info" class="cycle-info"></div>
+      <ul id="cycle-history" class="cycle-history"></ul>
+    </div>
+  </div>
+
+  <!-- CLOSURE PAGE -->
+  <div id="closure-page" class="page">
+    <div class="page-header">
+      <h1>Day Closure</h1>
+      <p class="subtitle">Optional end-of-day ritual</p>
+    </div>
+
+    <div class="card">
+      <h3>One thing I'm proud of today</h3>
+      <input 
+        type="text" 
+        id="proud-input" 
+        class="closure-input" 
+        placeholder="Even small things count..." />
+    </div>
+
+    <div class="card">
+      <h3>One thing I release</h3>
+      <textarea 
+        id="release-input" 
+        class="closure-input" 
+        placeholder="What are you letting go of?"></textarea>
+    </div>
+
+    <button class="modal-btn" onclick="saveClosure()">Save & Close Day</button>
+
+    <div style="margin-top: 16px; text-align: center; opacity: 0.6; font-size: 0.85rem; font-style: italic;">
+      These reflections are private and don't affect any metrics
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showPage('today-page')">
+    <span class="nav-icon">🏡</span>
+    <span>Today</span>
+  </button>
+  <button class="nav-item" onclick="showPage('brain-page')">
+    <span class="nav-icon">💭</span>
+    <span>Brain</span>
+  </button>
+  <button class="nav-item" onclick="showPage('calendar-page')">
+    <span class="nav-icon">📅</span>
+    <span>Calendar</span>
+  </button>
+  <button class="nav-item" onclick="showPage('insights-page')">
+    <span class="nav-icon">✨</span>
+    <span>Insights</span>
+  </button>
+  <button class="nav-item" onclick="showPage('closure-page')">
+    <span class="nav-icon">🌙</span>
+    <span>Closure</span>
+  </button>
+</nav>
+
+<!-- Add Task Modal -->
+<div class="modal" id="add-task-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Task</h3>
+      <button class="close-btn" onclick="closeModal('add-task-modal')">&times;</button>
+    </div>
+    <select class="modal-select" id="content-type-select" style="display: none;">
+      <option value="">Content Type</option>
+      <option value="Video">📹 Video</option>
+      <option value="Song">🎵 Song</option>
+      <option value="Podcast">🎙️ Podcast</option>
+      <option value="Reading">📖 Reading</option>
+      <option value="Other">✏️ Other</option>
+    </select>
+    <input type="text" class="modal-input" id="task-title-input" placeholder="Task description">
+    <input type="date" class="modal-input" id="task-deadline-input">
+    <button class="modal-btn" onclick="addTask()">Add Task</button>
+  </div>
+</div>
+
+<!-- Extract Task Modal -->
+<div class="modal" id="extract-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Extract as Task</h3>
+      <button class="close-btn" onclick="closeModal('extract-modal')">&times;</button>
+    </div>
+    <div id="extract-text" style="margin-bottom: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; font-style: italic;"></div>
+    <select class="modal-select" id="extract-category">
+      <optgroup label="📚 Studies">
+        <option value="lessons">Lessons</option>
+        <option value="homework">Homework</option>
+        <option value="revision">Revision</option>
+      </optgroup>
+      <optgroup label="🌍 Languages">
+        <option value="korean">🇰🇷 Korean</option>
+        <option value="greek">🇬🇷 Greek</option>
+        <option value="hebrew">🇮🇱 Hebrew</option>
+        <option value="german">🇩🇪 German</option>
+      </optgroup>
+      <optgroup label="Other">
+        <option value="training">🏋️ Training</option>
+        <option value="chores">🏠 Chores</option>
+      </optgroup>
+    </select>
+    <input type="date" class="modal-input" id="extract-deadline">
+    <button class="modal-btn" onclick="extractTask()">Extract Task</button>
+  </div>
+</div>
+
+<!-- Day Detail Modal -->
+<div class="modal" id="day-detail-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title" id="detail-title">Day Details</h3>
+      <button class="close-btn" onclick="closeModal('day-detail-modal')">&times;</button>
+    </div>
+    <div id="day-detail-content"></div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+
+<!-- PWA Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('✅ Service Worker registered'))
+      .catch(err => console.error('❌ Service Worker failed:', err));
+  });
+}
+</script>
+
+</body>
+</html>
